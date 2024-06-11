@@ -5,70 +5,6 @@ import CustomModals from './CustomModal';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchEvents } from '../reducers/eventsSlice';
 
-// const getListData = (value) => {
-//   let listData;
-//   switch (value.date()) {
-//     case 8:
-//       listData = [
-//         {
-//           type: 'warning',
-//           content: 'This is warning event.',
-//         },
-//         {
-//           type: 'success',
-//           content: 'This is usual event.',
-//         },
-//       ];
-//       break;
-//     case 10:
-//       listData = [
-//         {
-//           type: 'warning',
-//           content: 'This is warning event.',
-//         },
-//         {
-//           type: 'success',
-//           content: 'This is usual event.',
-//         },
-//         {
-//           type: 'error',
-//           content: 'This is error event.',
-//         },
-//       ];
-//       break;
-//     case 15:
-//       listData = [
-//         {
-//           type: 'warning',
-//           content: 'This is warning event',
-//         },
-//         {
-//           type: 'success',
-//           content: 'This is very long usual event......',
-//         },
-//         {
-//           type: 'error',
-//           content: 'This is error event 1.',
-//         },
-//         {
-//           type: 'error',
-//           content: 'This is error event 2.',
-//         },
-//         {
-//           type: 'error',
-//           content: 'This is error event 3.',
-//         },
-//         {
-//           type: 'error',
-//           content: 'This is error event 4.',
-//         },
-//       ];
-//       break;
-//     default:
-//   }
-//   return listData || [];
-// };
-
 const getMonthData = (value) => {
   if (value.month() === 8) {
     return 1394;
@@ -89,22 +25,25 @@ const CustomCalender = () => {
   const error = useSelector(state => state.events.error);
 
   const getListData = (value) => {
-
     if (!events || events.length === 0) {
       return [];
     }
-
+  
+    const formattedDate = value.date().toString().padStart(2, '0'); // Ensure two-digit format
+    const formattedMonth =(value.month() + 1) .toString().padStart(2, '0'); // Ensure two-digit format
+  
     const filteredEvents = events.filter(event => {
-      const eventDayofMonth = event?.start_date?.split('-')[2];
-      return eventDayofMonth == value.date();
+      const eventDayOfMonth = event?.start_date?.split('-')[1];
+      const eventDayofDate = event?.start_date?.split('-')[2];
+      return eventDayOfMonth === formattedMonth && eventDayofDate === formattedDate;
     });
-
+  
     return filteredEvents.map((event) => ({
       type: 'success',
       content: event.title,
       ...event
-    }))
-  }
+    }));
+  };
 
   useEffect(() => {
     dispatch(fetchEvents({ month, year }));
@@ -124,7 +63,7 @@ const CustomCalender = () => {
     return (
       <>
         {listData.map((item, index) => (
-          <Badge status={item.type} text={item.content} />
+          <Badge key={index} status={item.type} text={item.content} />
         ))}
       </>
     );
