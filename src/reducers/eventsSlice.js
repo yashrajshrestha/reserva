@@ -26,7 +26,7 @@ export const fetchEvents =
 export const addEvent =  
     createAsyncThunk('events/addEvent',
         async (event) => {
-            const response = await axios.post(`${API_URL}/events`, event);
+            const response = await axios.post(`${API_URL}/add-event`, event);
             return response.data; 
         }
     );
@@ -34,7 +34,7 @@ export const addEvent =
 export const updateEvent = 
     createAsyncThunk('events/updateEvent',
         async (event) => {
-            const response = await axios.put(`${API_URL}/events/${event.id}`, event);
+            const response = await axios.put(`${API_URL}/update-event/${event.id}`, event);
             return response.data;
         }
     );
@@ -42,7 +42,7 @@ export const updateEvent =
 export const deleteEvent = 
     createAsyncThunk('events/deleteEvent',
         async (id) => {
-            const response = await axios.delete(`${API_URL}/events/${id}`);
+            const response = await axios.delete(`${API_URL}/delete-event/${id}`);
             return response.data;
         }
     );

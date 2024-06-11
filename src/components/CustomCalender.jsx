@@ -95,13 +95,14 @@ const CustomCalender = () => {
     }
 
     const filteredEvents = events.filter(event => {
-      const eventDayofMonth = event.start_date.split('-')[2];
+      const eventDayofMonth = event?.start_date?.split('-')[2];
       return eventDayofMonth == value.date();
     });
 
-    return filteredEvents.map(event => ({
+    return filteredEvents.map((event) => ({
       type: 'success',
-      content: event.title
+      content: event.title,
+      ...event
     }))
   }
 

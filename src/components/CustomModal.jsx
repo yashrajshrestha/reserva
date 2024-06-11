@@ -1,8 +1,9 @@
-import React from 'react';
-import { Button, Modal, Typography, Form, Input, DatePicker } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { Button, Modal, Typography, Form, Input, DatePicker, Table, Spin, Popconfirm } from 'antd';
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import { useDispatch } from 'react-redux';
-import { addEvent } from '../reducers/eventsSlice'; // Update with your actual action import
+import { addEvent, deleteEvent, fetchEvents, updateEvent } from '../reducers/eventsSlice'; // Update with your actual action import
+import dayjs from 'dayjs';
 
 const { Title } = Typography;
 const { RangePicker } = DatePicker;
@@ -12,25 +13,95 @@ const CustomModals = ({ visible, onCancel, item }) => {
   
   const dispatch = useDispatch();
   const [form] = Form.useForm();
+  const [visibleModal, setVisibleModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const onFinish = (values) => {
-    const { title, dateRange, description, participants } = values;
-    const [start_date, end_date] = dateRange;
+  useEffect(() => {
+    if (!visible) {
+      setVisibleModal(false); // Reset visibleModal to false when the modal is closed
+      form.resetFields();
+    }
+  }, [visible]);
+
+  const onFinish = async (values) => {
+    try {
+      setIsLoading(true); // Set loading state to true
+      const { id, title, dateRange, description, participants } = values;
+      const [start_date, end_date] = dateRange;
+      const year = item?.date.year();
+      const month = item?.date.month();
+
+      const eventData = {
+        id,
+        title,
+        start_date: start_date.format('YYYY-MM-DD'),
+        end_date: end_date.format('YYYY-MM-DD'),
+        description,
+        year,
+        month,
+        participants: participants.filter(email => email).map(email => email.trim()),
+      };
+      console.log('Submitted event data:', eventData);
+
+      if(id){
+        await dispatch(updateEvent(eventData));
+      }else {
+        await dispatch(addEvent(eventData));
+      }
+
+      dispatch(fetchEvents({ month, year }));
+      setIsLoading(false); // Set loading state to false after successful submission
+      onCancel(); // Close the modal after form submission
+    } catch (error) {
+      console.error('Error submitting event data:', error);
+      setIsLoading(false); // Set loading state to false in case of error
+    }
+  };
+
+  const columns = [
+    {
+      title: 'Title',
+      dataIndex: 'title',
+      key: 'title',
+    },
+    {
+      title: 'Start Date',
+      dataIndex: 'start_date',
+      key: 'start_date',
+    },
+    {
+      title: 'End Date',
+      dataIndex: 'end_date',
+      key: 'end_date',
+    },
+    {
+      title: 'Description',
+      dataIndex: 'description',
+      key: 'description',
+    }
+  ];
+
+
+  const handleDelete = async (id) => {
     const year = item?.date.year();
     const month = item?.date.month();
+    setIsLoading(true);
+    await dispatch(deleteEvent(id));
+    dispatch(fetchEvents({ month, year }));
+    setIsLoading(false); // Set loading state to false after successful submission
+    onCancel();
+  };
 
-    const eventData = {
-      title,
-      start_date: start_date.format('YYYY-MM-DD'),
-      end_date: end_date.format('YYYY-MM-DD'),
-      description,
-      year,
-      month,
-      participants: participants.filter(email => email).map(email => email.trim()),
-    };
-    console.log('Submitted event data:', eventData);
-    dispatch(addEvent(eventData)); // Assuming you have an action like 'addEvent' to dispatch
-    onCancel(); // Close the modal after form submission
+  const handleRowClick = (event) => {
+    
+    setVisibleModal(true);
+    form.setFieldsValue({
+      id: event.id,
+      title: event.title,
+      dateRange: [dayjs(event.start_date), dayjs(event.end_date)],
+      description: event.description,
+      participants: event.participants,
+    });
   };
 
   return (
@@ -40,11 +111,42 @@ const CustomModals = ({ visible, onCancel, item }) => {
       onCancel={onCancel}
       footer={null}
     >
+       {isLoading ? ( // Show loading spinner if isLoading is true
+        <Spin size="large" />
+      ) : (
+        <>
+      {item && item.events && item.events.length > 0 && !visibleModal ? (
+        <>
+        <Button type="primary" onClick={() => {
+          setVisibleModal(true);
+          form.resetFields();
+        }}>
+          Create Event
+        </Button>
+        <Table 
+          dataSource={item.events} 
+          columns={columns}  
+          rowKey="id"
+          onRow={(record, rowIndex) => {
+            return {
+              onClick: () => handleRowClick(record),
+            };
+          }}
+        />
+        </>
+      ) : (
+      <>
       <Form
         form={form}
         layout="vertical"
         onFinish={onFinish}
       >
+        <Form.Item
+                name="id"
+                noStyle
+              >
+                <Input type="hidden" />
+              </Form.Item>
         <Form.Item
           label="Event Title"
           name="title"
@@ -58,7 +160,7 @@ const CustomModals = ({ visible, onCancel, item }) => {
           name="dateRange"
           rules={[{ required: true, message: 'Please select date range!' }]}
         >
-          <RangePicker />
+          <RangePicker/>
         </Form.Item>
 
         <Form.Item
@@ -114,8 +216,17 @@ const CustomModals = ({ visible, onCancel, item }) => {
           <Button type="primary" htmlType="submit">
             Submit
           </Button>
+          {form.getFieldValue('id') && (<div style={{ float: 'right' }}>
+          <Button type="primary" danger onClick={() => handleDelete(form.getFieldValue('id'))}>
+          Delete
+        </Button>
+        </div>)}
         </Form.Item>
       </Form>
+    </>
+      )}
+      </>
+    )}
     </Modal>
   );
 };
