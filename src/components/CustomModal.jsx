@@ -29,7 +29,7 @@ const CustomModals = ({ visible, onCancel, item }) => {
       const { id, title, dateRange, description, participants } = values;
       const [start_date, end_date] = dateRange;
       const year = item?.date.year();
-      const month = item?.date.month();
+      const month = item?.date.month() + 1;
 
       const eventData = {
         id,

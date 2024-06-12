@@ -47,12 +47,30 @@ export const deleteEvent =
         }
     );
 
+export const getHolidays =  
+    createAsyncThunk('events/getHoliday',
+        async (event) => {
+            const response = await axios.post(`${API_URL}/get-holidays`, event);
+            return response.data; 
+        }
+    );
+
+export const fetchCountries =
+    createAsyncThunk('events/fetchCountries',
+        async () => {
+            const response = await axios.get(`${API_URL}/get-countries`);
+            return response.data;
+        }
+    );
+
 const eventsSlice = createSlice({
     name: 'events',
     initialState:{
         events: [],
         status: 'idle',
         error: null,
+        holidays: [],
+        countries: []
     },
     reducers: {},
     extraReducers: (builder) => {
@@ -72,6 +90,10 @@ const eventsSlice = createSlice({
             state.events[index] = action.payload;
         }).addCase(deleteEvent.fulfilled, (state, action) => {
             state.events = state.events.filter(event => event.id !== action.payload);
+        }).addCase(getHolidays.fulfilled, (state, action)=> {
+            state.holidays = action.payload;
+        }).addCase(fetchCountries.fulfilled, (state, action)=> {
+            state.countries.push(action.payload);
         })
     }
 });
