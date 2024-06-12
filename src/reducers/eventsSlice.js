@@ -9,7 +9,7 @@ export const fetchEvents =
             
             const {year, month} = params;
             let url = `${API_URL}/events/${year}/${month}`;
-            const queryParams = [];
+            // const queryParams = [];
 
             // if(year) queryParams.push(`year=${encodeURIComponent(year)}`);
             // if(month) queryParams.push(`month=${encodeURIComponent(month)}`);

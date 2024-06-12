@@ -4,6 +4,7 @@ import dayjs from 'dayjs';
 import CustomModals from './CustomModal';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchEvents } from '../reducers/eventsSlice';
+import { initializeSocket } from '../reducers/socketSlice';
 
 const getMonthData = (value) => {
   if (value.month() === 8) {
@@ -23,6 +24,11 @@ const CustomCalender = () => {
   const events = useSelector(state => state.events.events);
   const eventStatus = useSelector(state => state.events.status);
   const error = useSelector(state => state.events.error);
+  const notifications = useSelector(state => state.socket.notification);
+
+  useEffect(() => {
+    dispatch(initializeSocket());
+  }, [dispatch]);
 
   const getListData = (value) => {
     if (!events || events.length === 0) {
@@ -78,7 +84,7 @@ const CustomCalender = () => {
 
 
   const onSelect = (newValue, source) => {
-    console.log(newValue.year());
+    
     setMonth(newValue.month());
     setYear(newValue.year());
 
@@ -109,6 +115,9 @@ const CustomCalender = () => {
 
   return (
     <>
+      {notifications?.map((notification, index) => (
+          <Alert key={index} message={notification.message} /> 
+        ))}
       <Alert message={`You selected date: ${selectedValue?.format('YYYY-MM-DD')}`} />
       <Calendar
         cellRender={cellRender}
