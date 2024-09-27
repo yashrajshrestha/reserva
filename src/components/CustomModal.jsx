@@ -171,6 +171,52 @@ const CustomModals = ({ visible, onCancel, item }) => {
           <TextArea rows={4} />
         </Form.Item>
 
+        <Form.List name="todo-label">
+          {(fields, {add, remove}) => (
+            <>
+            
+                  {fields.map((field, index) => (
+                    <Form.Item
+                      key={field.key}
+                      label={index === 0 ? 'To-do List' : ''}
+                    >
+                      <Form.Item
+                        {...field}
+                        validateTrigger={['onChange', 'onBlur']}
+                        rules={[
+                          {required: true, whitespace: true, message: 'Please'},
+                          {type: 'test', message: 'Please enter a valid task!'}
+                        ]}
+                        noStyle
+                        >
+
+                          <Input placeholder="Enter a valid task" style={{width: '60%'}}/>
+                      </Form.Item>
+                      {fields.length > 1 ? (
+                        <MinusCircleOutlined
+                          className="dynamic-delete-button"
+                          onClick={() => remove(field.name)}
+                        />
+                      ): null}
+
+                    </Form.Item>
+                  ))}
+          
+
+              <Form.Item>
+                <Button
+                  type="dashed"
+                  onClick={() => add()}
+                  style={{ width: '60%' }}
+                  icon={<PlusOutlined />}
+                >
+                  Add Todo List
+                </Button>
+              </Form.Item>
+            </>
+          )}
+        </Form.List>
+
         <Form.List name="participants">
           {(fields, { add, remove }) => (
             <>
